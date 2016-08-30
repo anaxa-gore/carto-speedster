@@ -1,0 +1,39 @@
+<html>
+<head>
+    <title>Bonjour petit padawan...</title>
+    <link rel="stylesheet" href="http://openlayers.org/en/v3.18.1/css/ol.css" type="text/css">
+    <script src="http://openlayers.org/en/v3.18.1/build/ol.js"></script>
+    <style>
+        html body {
+            width: 100%;
+            height: 100%;
+            margin: 0;
+        }
+    </style>
+</head>
+
+<body id="map">
+<script>
+    var map = new ol.Map({
+        layers: [
+            /*new ol.layer.Tile({
+                source: new ol.source.OSM()
+            }),*/
+            new ol.layer.Tile({
+                source: new ol.source.TileWMS({
+//                    url: 'http://demo.boundlessgeo.com/geoserver/wms',
+                    url: 'http://localhost:8080/cartospeedster/rest/coucou',
+                    params: {'LAYERS': ['nasa:bluemarble']},
+                    serverType: 'geoserver'
+                })
+            })
+        ],
+        target: 'map',
+        view: new ol.View({
+            center: [0, 0],
+            zoom: 2
+        })
+    });
+</script>
+</body>
+</html>
