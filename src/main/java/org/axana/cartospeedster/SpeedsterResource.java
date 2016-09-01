@@ -12,7 +12,7 @@ import javax.ws.rs.core.MediaType;
 /**
  * Created by tbonavia on 30/08/2016.
  */
-@Path("/coucou")
+@Path("/speedster")
 public class SpeedsterResource {
     private HttpServletRequest request;
 
