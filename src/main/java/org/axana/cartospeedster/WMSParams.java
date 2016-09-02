@@ -29,10 +29,15 @@ class WMSParams {
     static WMSParams decodeParameters(HttpServletRequest req) {
         final WMSParams result = new WMSParams();
 
-        result.layers = Arrays.asList(req.getParameter("LAYERS").split(","));
-        result.width = Integer.valueOf(req.getParameter("WIDTH"));
-        result.height = Integer.valueOf(req.getParameter("HEIGHT"));
-        result.queryEnvelope = decodeBBOX(req.getParameter("BBOX"), req.getParameter("CRS"));
+        final String layers = req.getParameter("LAYERS") != null ? req.getParameter("LAYERS") : req.getParameter("layers");
+        result.layers = Arrays.asList(layers.split(","));
+        final String width = req.getParameter("WIDTH") != null ? req.getParameter("WIDTH") : req.getParameter("width");
+        result.width = Integer.valueOf(width);
+        final String height = req.getParameter("HEIGHT") != null ? req.getParameter("HEIGHT") : req.getParameter("height");
+        result.height = Integer.valueOf(height);
+        final String envelope = req.getParameter("BBOX") != null ? req.getParameter("BBOX") : req.getParameter("bbox");
+        final String crs = req.getParameter("CRS") != null ? req.getParameter("CRS") : req.getParameter("crs");
+        result.queryEnvelope = decodeBBOX(envelope, crs);
 
         return result;
     }

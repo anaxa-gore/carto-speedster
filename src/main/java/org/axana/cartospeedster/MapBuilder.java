@@ -29,7 +29,7 @@ public class MapBuilder implements Runnable {
     private final AsyncResponse response;
     private SpeedsterManager speedsterManager;
 
-    private final ExecutorService s = Executors.newCachedThreadPool(); // TODO Find the best...
+    private final ExecutorService s = Executors.newFixedThreadPool(5); // TODO Find the best...
 
     MapBuilder(HttpServletRequest originalRequest, AsyncResponse response, SpeedsterManager speedsterManager) {
         this.params = WMSParams.decodeParameters(originalRequest);
