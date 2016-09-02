@@ -8,6 +8,7 @@ import javax.ws.rs.container.AsyncResponse;
 import javax.ws.rs.container.Suspended;
 import javax.ws.rs.core.Context;
 import javax.ws.rs.core.MediaType;
+import java.net.MalformedURLException;
 
 /**
  * Created by tbonavia on 30/08/2016.
@@ -19,8 +20,12 @@ public class SpeedsterResource {
     @GET
     @Produces(MediaType.APPLICATION_OCTET_STREAM)
     public void getInfo(@Suspended final AsyncResponse asyncResponse){
-        // The request is submitted for further resolution
-        SpeedsterManager.getInstance().submitRequest(this.request, asyncResponse);
+        try {
+            // The request is submitted for further resolution
+            SpeedsterManager.getInstance().submitRequest(this.request, asyncResponse);
+        } catch (MalformedURLException e) {
+            e.printStackTrace();
+        }
     }
 
     @Context

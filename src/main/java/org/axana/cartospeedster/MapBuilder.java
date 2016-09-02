@@ -27,13 +27,15 @@ public class MapBuilder implements Runnable {
     private final WMSParams params;
     private final HttpServletRequest originalRequest;
     private final AsyncResponse response;
+    private SpeedsterManager speedsterManager;
 
     private final ExecutorService s = Executors.newCachedThreadPool(); // TODO Find the best...
 
-    MapBuilder(HttpServletRequest originalRequest, AsyncResponse response) {
+    MapBuilder(HttpServletRequest originalRequest, AsyncResponse response, SpeedsterManager speedsterManager) {
         this.params = WMSParams.decodeParameters(originalRequest);
         this.originalRequest = originalRequest;
         this.response = response;
+        this.speedsterManager = speedsterManager;
     }
 
     public void run() {
@@ -41,13 +43,21 @@ public class MapBuilder implements Runnable {
 
         // Build n requests, 1 per layer
         Client client = ClientBuilder.newClient();
-        WebTarget target = client.target("http://demo.boundlessgeo.com");
-        WebTarget path = target.path("geoserver/wms");
+        WebTarget target = client.target(SpeedsterManager.WMS_URL);
+//        WebTarget target = client.target("http://demo.boundlessgeo.com");
+//        WebTarget path = target.path("geoserver/wms");
 
         List<IndividualRequestor> requests = new ArrayList<>();
         Map<String, String[]> parameters = this.originalRequest.getParameterMap();
+        int nbQueries = 0;
         for (String layer : this.params.layers) {
-            WebTarget newRequest = path.path("");
+            // Queries are done only on layers that intersect the query envelope
+            if(!this.speedsterManager.isLayerInBounds(layer, this.params.queryEnvelope))
+                continue;
+
+            nbQueries++;
+
+            WebTarget newRequest = target.path("");
             for (Map.Entry<String, String[]> param : parameters.entrySet()) {
                 if ("LAYERS".equals(param.getKey())) {
                     newRequest = newRequest.queryParam("LAYERS", layer);
@@ -67,7 +77,7 @@ public class MapBuilder implements Runnable {
             final List<Future<Response>> futures = this.s.invokeAll(requests);
 
             afterRequests = System.currentTimeMillis();
-            System.out.println("Durée des requêtes : " + (afterRequests - start) + " ms");
+            System.out.println("Durée des " + nbQueries + " requêtes : " + (afterRequests - start) + " ms");
             for (Future<Response> f : futures) {
                 Response result = f.get();
                 try (final InputStream is = result.readEntity(InputStream.class)) {
@@ -81,7 +91,7 @@ public class MapBuilder implements Runnable {
 
         final long afterBuildingImage = System.currentTimeMillis();
 
-        System.out.println("Durée de construction des image : " + (afterBuildingImage - afterRequests) + " ms");
+//        System.out.println("Durée de construction des image : " + (afterBuildingImage - afterRequests) + " ms");
 
         // Resume the async response with a custom response
         try (ByteArrayOutputStream baos = new ByteArrayOutputStream()) {
